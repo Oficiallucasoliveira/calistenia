@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1412">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Calistenia">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Calistenia em Casa – 12 Semanas</title>
+<style>
+:root{--bg:#0f1412;--card:#18201c;--line:#26312b;--txt:#eef3ef;--mut:#92a199;--acc:#4ade80;--acc2:#fb923c;--bad:#f87171}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:84px}
+header{padding:calc(18px + env(safe-area-inset-top)) 16px 6px}
+h1{font-size:20px;margin:0}
+.sub{color:var(--mut);font-size:13px}
+main{padding:8px 16px 16px;max-width:560px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
+.card h2{margin:0 0 4px;font-size:17px}
+.pill{display:inline-block;background:#203027;color:var(--acc);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
+.pill.o{background:#33261a;color:var(--acc2)}
+button{font:inherit;border:0;border-radius:12px;padding:12px 16px;background:var(--acc);color:#04210f;font-weight:700;width:100%;cursor:pointer}
+button.sec{background:#222d27;color:var(--txt);font-weight:600}
+button.sm{width:auto;padding:8px 12px;font-size:14px}
+.ex{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.ex:first-of-type{border-top:0}
+.ex .n{min-width:26px;height:26px;border-radius:50%;background:#203027;color:var(--acc);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.ex b{display:block}
+.ex span{color:var(--mut);font-size:13px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#0c110f;border-top:1px solid var(--line);display:flex;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+nav button{background:none;color:var(--mut);font-size:13px;padding:8px 4px;border-radius:10px;font-weight:600}
+nav button.on{color:var(--acc);background:#16211b}
+.row{display:flex;gap:8px;margin-top:10px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.stat b{display:block;font-size:22px;color:var(--acc)}
+.stat span{font-size:12px;color:var(--mut)}
+input{font:inherit;width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:#101713;color:var(--txt)}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px;text-align:center;font-size:12px;color:var(--mut)}
+.wk div{padding:8px 0;border-radius:10px;background:#131b17;border:1px solid var(--line)}
+.wk .d{background:#203027;color:var(--acc);border-color:#2f4a3a}
+.wk .t{border-color:var(--acc)}
+.timer{position:fixed;inset:0;background:var(--bg);z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+.timer.show{display:flex}
+.timer.work{background:#0e2216}
+.timer.rest{background:#2a1c0e}
+.timer h3{font-size:28px;margin:6px 0}
+.timer .big{font-size:96px;font-weight:800;line-height:1}
+.timer p{color:var(--mut);max-width:340px}
+.hint{font-size:13px;color:var(--mut)}
+svg{width:100%;height:auto}
+a{color:var(--acc)}
+
+.ex.tap{cursor:pointer}
+.ver{color:var(--acc);font-size:13px;font-weight:600;margin-top:3px}
+.det{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:30;display:none;align-items:flex-end;justify-content:center}
+.det.show{display:flex}
+.det .sheet{background:var(--card);border-radius:20px 20px 0 0;max-height:92vh;overflow:auto;width:100%;max-width:560px;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
+.det h2{margin:0 0 8px}
+.imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.imgs figure{margin:0}
+.imgs img{width:100%;border-radius:12px;display:block;background:#101713;aspect-ratio:3/2;object-fit:cover}
+.imgs figcaption{font-size:12px;color:var(--mut);text-align:center;margin-top:3px}
+.det ul{padding-left:20px;margin:4px 0 10px}
+.det li{margin:3px 0}
+.det h4{margin:10px 0 2px;font-size:14px}
+.bad li::marker{content:"✗ ";color:var(--bad)}
+.good li::marker{content:"✓ ";color:var(--acc)}
+.credit{font-size:11px;color:var(--mut);margin-top:10px}
+.vid{display:block;text-align:center;text-decoration:none;background:#222d27;color:var(--txt);padding:12px;border-radius:12px;font-weight:600;margin:10px 0}
+</style>
+</head>
+<body>
+<header><h1>🔥 Calistenia em Casa</h1><div class="sub" id="top"></div></header>
+<main id="app"></main>
+<nav>
+  <button data-t="hoje" class="on">Hoje</button>
+  <button data-t="plano">Plano</button>
+  <button data-t="prog">Progresso</button>
+</nav>
+<div class="det" id="det"><div class="sheet" id="sheet"></div></div>
+<div class="timer" id="timer">
+  <span class="pill" id="tr"></span>
+  <h3 id="tn"></h3>
+  <div class="big" id="tt">0</div>
+  <p id="th"></p>
+  <div style="width:100%;max-width:340px">
+    <div class="row"><button class="sec" id="tp">Pausar</button><button class="sec" id="ts">Pular</button></div>
+    <div class="row"><button class="sec" id="tt2">📷 Ver técnica</button><button class="sec" id="tq">Sair</button></div>
+  </div>
+</div>
+
+<script>
+/* ===== DADOS ===== */
+var EX = {
+ agach:{n:"Agachamento",h:"Pés na largura dos ombros, desça como se fosse sentar, joelhos alinhados com os pés."},
+ agachp:{n:"Agachamento com pausa",h:"Desça e segure 3 segundos embaixo, suba forte."},
+ agachs:{n:"Agachamento com salto",h:"Desça e salte, aterrissando macio. Se doer o joelho, volte ao agachamento normal."},
+ flexi:{n:"Flexão inclinada",h:"Mãos na mesa ou sofá, corpo reto. Quanto mais alto o apoio, mais fácil."},
+ flexj:{n:"Flexão de joelhos",h:"Joelhos no chão, corpo reto dos joelhos à cabeça, peito quase no chão."},
+ flex:{n:"Flexão no chão",h:"Corpo reto, cotovelos a 45°. Se não der, faça de joelhos."},
+ flexp:{n:"Flexão com pés elevados",h:"Pés no sofá ou cadeira, mãos no chão. Mantenha o abdômen firme."},
+ ponte:{n:"Ponte de glúteo",h:"Deitado, joelhos dobrados, suba o quadril e aperte o glúteo 1s no alto."},
+ pontu:{n:"Ponte unilateral",h:"Como a ponte, mas com uma perna esticada. Troque a perna a cada volta."},
+ prancha:{n:"Prancha",h:"Antebraços no chão, corpo em linha reta, abdômen e glúteo contraídos."},
+ remada:{n:"Remada embaixo da mesa",h:"Deitado sob uma mesa firme, segure a borda e puxe o peito até ela. Confira se a mesa aguenta."},
+ afundo:{n:"Afundo",h:"Um passo à frente, desça até o joelho de trás quase tocar o chão. Alterne."},
+ afundoc:{n:"Afundo caminhando",h:"Afundo alternado avançando pela sala."},
+ super:{n:"Superman",h:"De barriga para baixo, levante braços e pernas juntos, segure 1s."},
+ joelho:{n:"Elevação de joelhos",h:"Em pé, suba os joelhos alternados até a altura do quadril, ritmo constante."},
+ plat:{n:"Prancha lateral",h:"Apoiado no antebraço, quadril alto. Troque o lado a cada volta."},
+ esc:{n:"Escalador",h:"Em posição de flexão, leve os joelhos ao peito alternando rápido."},
+ burpee:{n:"Burpee sem flexão",h:"Agache, jogue os pés para trás, volte e fique em pé (com salto leve no fim)."}
+};
+var TEC={"agach": {"img": "Bodyweight_Squat", "dicas": ["Pés na largura dos ombros, pontas levemente para fora", "Peso nos calcanhares, peito aberto, olhar à frente", "Desça até a coxa ficar quase paralela ao chão"], "erros": ["Joelhos caindo para dentro", "Calcanhares saindo do chão", "Costas curvando no fundo"], "yt": "agachamento livre correto"}, "agachp": {"img": "Bodyweight_Squat", "dicas": ["Mesma técnica do agachamento", "Segure 3 segundos embaixo, sem relaxar", "Suba empurrando o chão com força"], "erros": ["Descansar o corpo no fundo", "Joelhos para dentro", "Perder a postura ao subir"], "yt": "agachamento com pausa"}, "agachs": {"img": "Freehand_Jump_Squat", "dicas": ["Desça controlado e salte para cima", "Aterrisse macio, na ponta dos pés e já flexionando os joelhos", "Reinicie só depois de estabilizar"], "erros": ["Aterrissar com as pernas esticadas", "Joelhos para dentro ao pousar", "Fazer sem aquecer: se o joelho doer, volte ao agachamento normal"], "yt": "agachamento com salto técnica"}, "flexi": {"img": "Incline_Push-Up", "dicas": ["Mãos firmes na mesa/sofá, na largura dos ombros ou um pouco mais", "Corpo em linha reta, abdômen e glúteo contraídos", "Desça até o peito quase tocar o apoio, cotovelos a ~45°"], "erros": ["Quadril caído ou empinado", "Cotovelos abertos a 90°", "Cabeça caída à frente"], "yt": "flexão inclinada como fazer"}, "flexj": {"img": "Pushups", "dicas": ["Foto mostra a flexão completa; aqui apoie os JOELHOS em um tapete", "Linha reta dos joelhos até a cabeça", "Desça com controle, peito quase no chão"], "erros": ["Quadril para trás (sentando nos calcanhares)", "Cotovelos muito abertos", "Descer só meio caminho"], "yt": "flexão de joelhos como fazer correto"}, "flex": {"img": "Pushups", "dicas": ["Mãos sob ou um pouco mais abertas que os ombros", "Corpo reto da cabeça aos calcanhares", "Cotovelos ~45° do corpo; peito quase toca o chão"], "erros": ["Quadril caído", "Cotovelos abertos em T", "Amplitude curta demais"], "yt": "flexão de braço como fazer correto"}, "flexp": {"img": "Push-Ups_With_Feet_Elevated", "dicas": ["Pés apoiados em sofá/cadeira estável", "Abdômen firme para não deixar a lombar afundar", "Descida controlada, cotovelos ~45°"], "erros": ["Lombar arqueada", "Apoio instável (use algo firme)", "Cabeça caída"], "yt": "flexão com pés elevados"}, "ponte": {"img": "Butt_Lift_Bridge", "dicas": ["Deitado, joelhos dobrados e calcanhares no chão", "Suba o quadril empurrando pelos calcanhares", "Aperte o glúteo 1s no alto, corpo em linha do ombro ao joelho"], "erros": ["Arquear a lombar para subir mais", "Empurrar com os dedos dos pés", "Subir rápido sem controle"], "yt": "ponte de glúteo como fazer"}, "pontu": {"img": "Single_Leg_Glute_Bridge", "dicas": ["Uma perna esticada, a outra apoiada firme no chão", "Quadril nivelado, sem girar", "Suba apertando o glúteo da perna de apoio"], "erros": ["Quadril girando para o lado", "Lombar arqueada", "Descer com tudo"], "yt": "ponte de glúteo unilateral"}, "prancha": {"img": "Plank", "dicas": ["Cotovelos sob os ombros, antebraços no chão", "Glúteo e abdômen contraídos, corpo em linha reta", "Respire normalmente e olhe para o chão"], "erros": ["Quadril caído ou muito alto", "Segurar a respiração", "Ombros caindo entre as escápulas"], "yt": "prancha abdominal correta"}, "remada": {"img": "Inverted_Row", "dicas": ["A foto usa uma barra; em casa use uma MESA MUITO FIRME (confira se aguenta o seu peso)", "Corpo reto, puxe o peito até a borda juntando as escápulas", "Desça controlado até esticar os braços"], "erros": ["Mesa que se mexe ou pode quebrar (risco real)", "Quadril caindo", "Puxar só com o braço sem juntar as escápulas"], "yt": "remada invertida embaixo da mesa"}, "afundo": {"img": "Bodyweight_Walking_Lunge", "dicas": ["Passo à frente longo, tronco ereto", "Desça até o joelho de trás quase tocar o chão", "Joelho da frente alinhado sobre o pé; empurre com o calcanhar para voltar"], "erros": ["Joelho da frente muito além do pé", "Tronco inclinado", "Passo curto demais"], "yt": "afundo correto como fazer"}, "afundoc": {"img": "Bodyweight_Walking_Lunge", "dicas": ["Mesma técnica do afundo, avançando pela sala", "Alterne as pernas com ritmo constante", "Mantenha o tronco ereto e o olhar à frente"], "erros": ["Passos curtos", "Joelho caindo para dentro", "Tronco para frente"], "yt": "afundo caminhando"}, "super": {"img": "Superman", "dicas": ["Deitado de barriga para baixo, braços à frente", "Levante braços, peito e pernas juntos e segure 1-2s", "Pescoço neutro, olhar para o chão"], "erros": ["Jogar a cabeça para trás", "Exagerar na curvatura da lombar", "Subir com impulso"], "yt": "exercício superman lombar como fazer"}, "joelho": {"img": null, "dicas": ["Em pé, postura ereta, braços em oposição às pernas (como correr)", "Suba os joelhos até a altura do quadril", "Pouse na ponta dos pés; se pesar nos joelhos, faça marchando (sem pulo)"], "erros": ["Inclinar o tronco para trás", "Subir só meio joelho", "Pouso pesado no calcanhar"], "yt": "elevação de joelhos high knees como fazer"}, "plat": {"img": "Side_Bridge", "dicas": ["Apoio no antebraço, cotovelo sob o ombro", "Quadril alto, corpo em linha da cabeça aos pés", "Troque de lado a cada volta"], "erros": ["Quadril caído", "Ombro desabando", "Girar o tronco para frente ou para trás"], "yt": "prancha lateral como fazer"}, "esc": {"img": "Mountain_Climbers", "dicas": ["Mãos sob os ombros, corpo em prancha alta", "Leve um joelho ao peito e alterne rápido", "Quadril baixo e abdômen firme"], "erros": ["Quadril empinado", "Mãos muito à frente", "Passos curtos e bagunçados"], "yt": "escalador mountain climber como fazer"}, "burpee": {"img": null, "dicas": ["Versão sem flexão: agache e apoie as mãos", "Jogue os pés para trás (prancha) e volte rápido", "Levante e dê um pequeno salto; sem pressa nas primeiras vezes"], "erros": ["Lombar afundando na prancha", "Pular forte demais com o corpo pesado: comece sem salto", "Perder a técnica ao cansar: diminua o ritmo"], "yt": "burpee sem flexão como fazer"}};
+var PH = [
+ {nome:"Base",sem:"1–4",w:40,r:20,rounds:3,A:["agach","flexi","ponte","prancha","remada"],B:["afundo","flexj","super","joelho","plat"],obs:"Sem pulos. Foque na técnica e no ritmo."},
+ {nome:"Progressão",sem:"5–8",w:40,r:20,rounds:4,A:["agachp","flex","ponte","prancha","remada"],B:["afundoc","flex","super","joelho","plat"],obs:"Mais voltas e movimentos mais difíceis. Prancha de ~45s."},
+ {nome:"Intensidade",sem:"9–12",w:40,r:20,rounds:5,A:["agachs","flexp","pontu","esc","remada"],B:["burpee","afundoc","flexp","esc","plat"],obs:"Entram os saltos. Se algo incomodar, volte ao nível anterior."}
+];
+var DIAS=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+/* tipo do dia: A, B, W (caminhada), R (descanso) */
+var TIPO=["R","A","B","R","A","B","W"];
+
+/* ===== ESTADO ===== */
+var S={start:null,done:{},logs:[]};
+var KEY="calistenia_v1";
+function load(){try{var j=localStorage.getItem(KEY);if(j)S=JSON.parse(j)}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function ds(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function pd(s){var a=s.split("-");return new Date(+a[0],+a[1]-1,+a[2])}
+function semana(d){if(!S.start)return 1;var diff=Math.floor((d-pd(S.start))/864e5);return Math.max(1,Math.floor(diff/7)+1)}
+function fase(w){return PH[w<=4?0:w<=8?1:2]}
+function streak(){var n=0,d=new Date();if(!S.done[ds(d)])d.setDate(d.getDate()-1);
+ for(var i=0;i<400;i++){var t=TIPO[d.getDay()];if(S.done[ds(d)])n++;else if(t!=="R")break;d.setDate(d.getDate()-1)}return n}
+
+/* ===== TELAS ===== */
+var tab="hoje",app=document.getElementById("app");
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+function exList(ids){return ids.map(function(id,i){return '<div class="ex tap" data-id="'+id+'"><div class="n">'+(i+1)+'</div><div style="flex:1"><b>'+EX[id].n+'</b><span>'+EX[id].h+'</span><div class="ver">📷 Ver técnica correta ›</div></div></div>'}).join("")}
+
+function hoje(){
+ var hj=new Date(),t=TIPO[hj.getDay()],w=semana(hj),ph=fase(Math.min(w,12)),k=ds(hj),feito=!!S.done[k];
+ var h='';
+ document.getElementById("top").textContent=DIAS[hj.getDay()]+" · "+(S.start?(w>12?"Programa concluído 🎉":"Semana "+w+" de 12 · Fase "+ph.nome):"Programa ainda não iniciado");
+ if(!S.start)h+='<div class="card"><h2>Pronto para começar?</h2><p class="hint">Marque o dia 1 do programa. A semana atual e as fases são contadas a partir dele.</p><button id="ini">Começar o programa hoje</button></div>';
+ if(w>12)h+='<div class="card"><h2>Você concluiu as 12 semanas!</h2><p class="hint">Continue repetindo a Fase 3 e aumentando repetições, ou me peça a próxima etapa.</p></div>';
+ h+='<div class="stats"><div class="stat"><b>'+streak()+'</b><span>dias seguidos</span></div><div class="stat"><b>'+Object.keys(S.done).length+'</b><span>treinos feitos</span></div><div class="stat"><b>'+(S.logs.length?S.logs[S.logs.length-1].weight:"–")+'</b><span>último peso (kg)</span></div></div>';
+ if(t==="R"){h+='<div class="card"><h2>😴 Dia de descanso</h2><p class="hint">Músculo cresce descansando. Alongue 10 min, beba bastante água e durma bem.</p>'+(feito?'':'<button class="sec" id="mk">Marcar descanso cumprido</button>')+'</div>'}
+ else if(t==="W"){h+='<div class="card"><h2>🚶 Caminhada de 45 min</h2><p class="hint">Ritmo firme, em que dá para falar mas não cantar. Ao ar livre, de preferência.</p>'+(feito?'<span class="pill">Concluído ✓</span>':'<button id="mk">Marcar como feita</button>')+'</div>'}
+ else{
+  var ids=ph[t];
+  h+='<div class="card"><span class="pill'+(t==="B"?' o':'')+'">Circuito '+t+'</span> <span class="pill o">Fase '+ph.nome+'</span><h2 style="margin-top:8px">'+ph.rounds+' voltas · '+ph.w+'s esforço / '+ph.r+'s descanso</h2><p class="hint">'+ph.obs+'</p>'+exList(ids)+(feito?'<div class="row"><span class="pill">Treino concluído hoje ✓</span></div>':'<div class="row"><button id="go">▶ Iniciar treino com timer</button></div><div class="row"><button class="sec" id="mk">Já fiz, marcar como feito</button></div>')+'</div>';
+  h+='<div class="card"><h2>Aquecimento (3–5 min)</h2><p class="hint">Rotação de ombros e quadril, 20 agachamentos lentos, 30s de elevação de joelhos.</p></div>';
+ }
+ h+='<div class="card"><h2>Lembrete do dia</h2><p class="hint">Proteína em toda refeição · sem refrigerante e sem álcool · 2–3 L de água · 7–8h de sono.</p></div>';
+ app.innerHTML=h;
+ var e;
+ if(e=document.getElementById("ini"))e.onclick=function(){S.start=ds();save();render()};
+ if(e=document.getElementById("mk"))e.onclick=function(){S.done[k]=1;save();render()};
+ if(e=document.getElementById("go"))e.onclick=function(){startTimer(ph,ids,k)};
+}
+
+function plano(){
+ document.getElementById("top").textContent="Plano de 12 semanas";
+ var w=semana(new Date()),h='';
+ h+='<div class="card"><h2>Semana típica</h2><div class="wk">'+[1,2,3,4,5,6,0].map(function(d){var tp=TIPO[d];return '<div class="'+(new Date().getDay()===d?'t':'')+'">'+DIAS[d].slice(0,3)+'<br><b style="color:var(--txt)">'+(tp==="R"?"Desc.":tp==="W"?"Cam.":tp)+'</b></div>'}).join("")+'</div></div>';
+ PH.forEach(function(p,i){
+  var cur=(S.start&&((i===0&&w<=4)||(i===1&&w>4&&w<=8)||(i===2&&w>8)));
+  h+='<div class="card"><span class="pill'+(cur?'':' o')+'">Semanas '+p.sem+'</span> '+(cur?'<span class="pill">você está aqui</span>':'')+'<h2 style="margin-top:8px">Fase '+(i+1)+' · '+p.nome+'</h2><p class="hint">'+p.rounds+' voltas · '+p.w+'s/'+p.r+'s · '+p.obs+'</p><b>Circuito A (seg/qui)</b>'+exList(p.A)+'<b>Circuito B (ter/sex)</b>'+exList(p.B)+'</div>';
+ });
+ h+='<div class="card"><h2>Alimentação</h2><p class="hint">Déficit de ~500 kcal/dia, proteína em toda refeição, cortar refrigerante, suco, álcool, frituras e doces. Meta realista: 0,5–1 kg por semana.</p></div>';
+ app.innerHTML=h;
+}
+
+function prog(){
+ document.getElementById("top").textContent="Seu progresso";
+ var L=S.logs.slice().sort(function(a,b){return a.date<b.date?-1:1}),h='';
+ h+='<div class="card"><h2>Registrar medidas</h2><p class="hint">1 vez por semana, no mesmo dia, em jejum.</p><div class="row"><input id="pw" type="number" step="0.1" inputmode="decimal" placeholder="Peso (kg)"><input id="pc" type="number" step="0.1" inputmode="decimal" placeholder="Cintura (cm)"></div><div class="row"><button id="sv">Salvar</button></div></div>';
+ if(L.length){
+  var ws=L.map(function(x){return x.weight}),mn=Math.min.apply(0,ws)-1,mx=Math.max.apply(0,ws)+1,W=300,H=140,pts=L.map(function(x,i){var X=L.length>1?10+i*(W-20)/(L.length-1):W/2,Y=H-10-((x.weight-mn)/(mx-mn||1))*(H-20);return [X,Y]});
+  var first=L[0].weight,last=L[L.length-1].weight,diff=(last-first).toFixed(1);
+  h+='<div class="card"><h2>Peso</h2><svg viewBox="0 0 '+W+' '+H+'"><polyline fill="none" stroke="#4ade80" stroke-width="2.5" points="'+pts.map(function(p){return p.join(",")}).join(" ")+'"/>'+pts.map(function(p){return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.5" fill="#4ade80"/>'}).join("")+'</svg><p class="hint">Início '+first+' kg → atual '+last+' kg ('+(diff>0?"+":"")+diff+' kg)</p></div>';
+  h+='<div class="card"><h2>Histórico</h2>'+L.slice().reverse().map(function(x){return '<div class="ex"><div><b>'+pd(x.date).toLocaleDateString("pt-BR")+'</b><span>'+x.weight+' kg'+(x.waist?' · cintura '+x.waist+' cm':'')+'</span></div></div>'}).join("")+'</div>';
+ }
+ h+='<div class="card"><h2>Zerar dados</h2><p class="hint">Apaga treinos feitos e medidas deste aparelho.</p><button class="sec" id="rs">Apagar tudo</button></div>';
+ app.innerHTML=h;
+ document.getElementById("sv").onclick=function(){var w=parseFloat(document.getElementById("pw").value),c=parseFloat(document.getElementById("pc").value);if(!w)return;
+  S.logs=S.logs.filter(function(x){return x.date!==ds()});S.logs.push({date:ds(),weight:w,waist:c||null});save();prog()};
+ document.getElementById("rs").onclick=function(){if(this.dataset.c){S={start:null,done:{},logs:[]};save();render()}else{this.dataset.c=1;this.textContent="Toque de novo para confirmar"}};
+}
+
+function render(){({hoje:hoje,plano:plano,prog:prog})[tab]()}
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){tab=b.dataset.t;document.querySelectorAll("nav button").forEach(function(x){x.classList.toggle("on",x===b)});render();window.scrollTo(0,0)}});
+
+
+/* ===== DETALHE DA TÉCNICA ===== */
+var detOnClose=null;
+function showDet(id,onClose){
+ var e=EX[id],t=TEC[id]||{dicas:[],erros:[]},h='<h2>'+e.n+'</h2>';
+ if(t.img){h+='<div class="imgs"><figure><img src="img/'+t.img+'_0.jpg" alt="'+e.n+' posição inicial" loading="lazy"><figcaption>Posição inicial</figcaption></figure><figure><img src="img/'+t.img+'_1.jpg" alt="'+e.n+' posição final" loading="lazy"><figcaption>Posição final</figcaption></figure></div>'}
+ else h+='<p class="hint">Sem foto neste exercício. Veja o vídeo abaixo.</p>';
+ h+='<h4>Como fazer</h4><ul class="good">'+t.dicas.map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul>';
+ h+='<h4>Erros comuns</h4><ul class="bad">'+t.erros.map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul>';
+ if(t.yt)h+='<a class="vid" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query='+encodeURIComponent(t.yt)+'">▶ Ver vídeos no YouTube</a>';
+ h+='<button id="dc">Fechar</button><div class="credit">Fotos: free-exercise-db (domínio público). Fotos ilustram a técnica; adapte a variação ao seu nível. Dor forte = pare.</div>';
+ document.getElementById("sheet").innerHTML=h;document.getElementById("det").classList.add("show");detOnClose=onClose||null;
+ document.getElementById("dc").onclick=closeDet;
+}
+function closeDet(){document.getElementById("det").classList.remove("show");if(detOnClose){var f=detOnClose;detOnClose=null;f()}}
+document.getElementById("det").onclick=function(e){if(e.target===this)closeDet()};
+app.addEventListener("click",function(e){var x=e.target.closest&&e.target.closest(".ex.tap");if(x)showDet(x.dataset.id)});
+
+/* ===== TIMER ===== */
+var T=null,ac=null;
+function beep(f,d){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.value=.15;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function buzz(){try{navigator.vibrate&&navigator.vibrate(200)}catch(e){}}
+function startTimer(ph,ids,k){
+ var seq=[];
+ for(var r=1;r<=ph.rounds;r++)ids.forEach(function(id,i){seq.push({t:"work",id:id,r:r,i:i,s:ph.w});seq.push({t:"rest",id:id,r:r,i:i,s:ph.r,next:ids[i+1]||(r<ph.rounds?ids[0]:null)})});
+ seq.pop(); /* sem descanso após o último */
+ T={seq:seq,p:0,left:seq[0].s,pause:false,k:k,ids:ids,total:ph.rounds};
+ document.getElementById("timer").classList.add("show");
+ beep(880,.2);buzz();drawT();
+ T.iv=setInterval(tick,1000);
+}
+function drawT(){
+ var s=T.seq[T.p],el=document.getElementById("timer");
+ el.className="timer show "+s.t;
+ document.getElementById("tr").textContent="Volta "+s.r+" de "+T.total+" · exercício "+(s.i+1)+"/"+T.ids.length;
+ document.getElementById("tt").textContent=T.left;
+ if(s.t==="work"){document.getElementById("tn").textContent=EX[s.id].n;document.getElementById("th").textContent=EX[s.id].h}
+ else{document.getElementById("tn").textContent="Descanse 😮‍💨";document.getElementById("th").textContent=s.next?"Próximo: "+EX[s.next].n:"Quase lá!"}
+ document.getElementById("tp").textContent=T.pause?"Continuar":"Pausar";
+}
+function tick(){
+ if(T.pause)return;
+ T.left--;
+ if(T.left<=3&&T.left>0)beep(660,.1);
+ if(T.left<=0){T.p++;if(T.p>=T.seq.length)return fim();T.left=T.seq[T.p].s;beep(T.seq[T.p].t==="work"?880:440,.25);buzz()}
+ drawT();
+}
+function stopT(){if(T){clearInterval(T.iv);T=null}document.getElementById("timer").className="timer"}
+function fim(){var k=T.k;stopT();beep(1000,.4);buzz();S.done[k]=1;save();render();alert2("Treino concluído! 💪")}
+function alert2(m){var d=document.createElement("div");d.className="card";d.style.cssText="position:fixed;top:16px;left:16px;right:16px;z-index:20;text-align:center;border-color:var(--acc)";d.innerHTML="<b>"+m+"</b>";document.body.appendChild(d);setTimeout(function(){d.remove()},3000)}
+document.getElementById("tp").onclick=function(){T.pause=!T.pause;drawT()};
+document.getElementById("ts").onclick=function(){T.p++;if(T.p>=T.seq.length)return fim();T.left=T.seq[T.p].s;drawT()};
+document.getElementById("tq").onclick=stopT;
+document.getElementById("tt2").onclick=function(){if(!T)return;var was=T.pause;T.pause=true;drawT();showDet(T.seq[T.p].id,function(){if(T){T.pause=was;drawT()}})};
+
+load();render();
+if('serviceWorker' in navigator){window.addEventListener('load',function(){try{navigator.serviceWorker.register('sw.js').catch(function(){})}catch(e){}})}
+</script>
+</body>
+</html>
