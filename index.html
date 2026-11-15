@@ -73,6 +73,13 @@ a{color:var(--acc)}
 .good li::marker{content:"✓ ";color:var(--acc)}
 .credit{font-size:11px;color:var(--mut);margin-top:10px}
 .vid{display:block;text-align:center;text-decoration:none;background:#222d27;color:var(--txt);padding:12px;border-radius:12px;font-weight:600;margin:10px 0}
+.fb{border-top:1px solid var(--line);padding:10px 0}
+.fb input{width:84px;flex:none}
+.seg{display:flex;gap:6px;flex:1}
+.seg button{padding:10px 4px;font-size:13px;background:#222d27;color:var(--txt);font-weight:600}
+.seg button.on{background:var(--acc);color:#04210f}
+.msg{padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.msg b{display:block}
 </style>
 </head>
 <body>
@@ -128,9 +135,9 @@ var DIAS=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
 var TIPO=["R","A","B","R","A","B","W"];
 
 /* ===== ESTADO ===== */
-var S={start:null,done:{},logs:[]};
+var S={start:null,done:{},logs:[],reps:{},off:{},easy:{},pi:null};
 var KEY="calistenia_v1";
-function load(){try{var j=localStorage.getItem(KEY);if(j)S=JSON.parse(j)}catch(e){}}
+function load(){try{var j=localStorage.getItem(KEY);if(j)S=JSON.parse(j)}catch(e){}S.reps=S.reps||{};S.off=S.off||{};S.easy=S.easy||{};S.done=S.done||{};S.logs=S.logs||[]}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function ds(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function pd(s){var a=s.split("-");return new Date(+a[0],+a[1]-1,+a[2])}
@@ -143,9 +150,10 @@ function streak(){var n=0,d=new Date();if(!S.done[ds(d)])d.setDate(d.getDate()-1
 var tab="hoje",app=document.getElementById("app");
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 
-function exList(ids){return ids.map(function(id,i){return '<div class="ex tap" data-id="'+id+'"><div class="n">'+(i+1)+'</div><div style="flex:1"><b>'+EX[id].n+'</b><span>'+EX[id].h+'</span><div class="ver">📷 Ver técnica correta ›</div></div></div>'}).join("")}
+function exList(ids){return ids.map(function(id,i){return '<div class="ex tap" data-id="'+id+'"><div class="n">'+(i+1)+'</div><div style="flex:1"><b>'+EX[id].n+'</b><span>'+EX[id].h+'</span><div class="ver">📷 Ver técnica correta ›</div>'+ult(id)+'</div></div>'}).join("")}
 
 function hoje(){
+ phaseCheck();
  var hj=new Date(),t=TIPO[hj.getDay()],w=semana(hj),ph=fase(Math.min(w,12)),k=ds(hj),feito=!!S.done[k];
  var h='';
  document.getElementById("top").textContent=DIAS[hj.getDay()]+" · "+(S.start?(w>12?"Programa concluído 🎉":"Semana "+w+" de 12 · Fase "+ph.nome):"Programa ainda não iniciado");
@@ -155,7 +163,7 @@ function hoje(){
  if(t==="R"){h+='<div class="card"><h2>😴 Dia de descanso</h2><p class="hint">Músculo cresce descansando. Alongue 10 min, beba bastante água e durma bem.</p>'+(feito?'':'<button class="sec" id="mk">Marcar descanso cumprido</button>')+'</div>'}
  else if(t==="W"){h+='<div class="card"><h2>🚶 Caminhada de 45 min</h2><p class="hint">Ritmo firme, em que dá para falar mas não cantar. Ao ar livre, de preferência.</p>'+(feito?'<span class="pill">Concluído ✓</span>':'<button id="mk">Marcar como feita</button>')+'</div>'}
  else{
-  var ids=ph[t];
+  var ids=ph[t].map(eff);
   h+='<div class="card"><span class="pill'+(t==="B"?' o':'')+'">Circuito '+t+'</span> <span class="pill o">Fase '+ph.nome+'</span><h2 style="margin-top:8px">'+ph.rounds+' voltas · '+ph.w+'s esforço / '+ph.r+'s descanso</h2><p class="hint">'+ph.obs+'</p>'+exList(ids)+(feito?'<div class="row"><span class="pill">Treino concluído hoje ✓</span></div>':'<div class="row"><button id="go">▶ Iniciar treino com timer</button></div><div class="row"><button class="sec" id="mk">Já fiz, marcar como feito</button></div>')+'</div>';
   h+='<div class="card"><h2>Aquecimento (3–5 min)</h2><p class="hint">Rotação de ombros e quadril, 20 agachamentos lentos, 30s de elevação de joelhos.</p></div>';
  }
@@ -163,7 +171,7 @@ function hoje(){
  app.innerHTML=h;
  var e;
  if(e=document.getElementById("ini"))e.onclick=function(){S.start=ds();save();render()};
- if(e=document.getElementById("mk"))e.onclick=function(){S.done[k]=1;save();render()};
+ if(e=document.getElementById("mk"))e.onclick=function(){S.done[k]=1;save();render();if(t==="A"||t==="B")openFb(ids,k)};
  if(e=document.getElementById("go"))e.onclick=function(){startTimer(ph,ids,k)};
 }
 
@@ -189,16 +197,51 @@ function prog(){
   h+='<div class="card"><h2>Peso</h2><svg viewBox="0 0 '+W+' '+H+'"><polyline fill="none" stroke="#4ade80" stroke-width="2.5" points="'+pts.map(function(p){return p.join(",")}).join(" ")+'"/>'+pts.map(function(p){return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.5" fill="#4ade80"/>'}).join("")+'</svg><p class="hint">Início '+first+' kg → atual '+last+' kg ('+(diff>0?"+":"")+diff+' kg)</p></div>';
   h+='<div class="card"><h2>Histórico</h2>'+L.slice().reverse().map(function(x){return '<div class="ex"><div><b>'+pd(x.date).toLocaleDateString("pt-BR")+'</b><span>'+x.weight+' kg'+(x.waist?' · cintura '+x.waist+' cm':'')+'</span></div></div>'}).join("")+'</div>';
  }
- h+='<div class="card"><h2>Zerar dados</h2><p class="hint">Apaga treinos feitos e medidas deste aparelho.</p><button class="sec" id="rs">Apagar tudo</button></div>';
+ h+=repsCard();h+='<div class="card"><h2>Zerar dados</h2><p class="hint">Apaga treinos feitos e medidas deste aparelho.</p><button class="sec" id="rs">Apagar tudo</button></div>';
  app.innerHTML=h;
  document.getElementById("sv").onclick=function(){var w=parseFloat(document.getElementById("pw").value),c=parseFloat(document.getElementById("pc").value);if(!w)return;
   S.logs=S.logs.filter(function(x){return x.date!==ds()});S.logs.push({date:ds(),weight:w,waist:c||null});save();prog()};
- document.getElementById("rs").onclick=function(){if(this.dataset.c){S={start:null,done:{},logs:[]};save();render()}else{this.dataset.c=1;this.textContent="Toque de novo para confirmar"}};
+ document.getElementById("rs").onclick=function(){if(this.dataset.c){S={start:null,done:{},logs:[],reps:{},off:{},easy:{},pi:null};save();render()}else{this.dataset.c=1;this.textContent="Toque de novo para confirmar"}};
 }
 
 function render(){({hoje:hoje,plano:plano,prog:prog})[tab]()}
 document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){tab=b.dataset.t;document.querySelectorAll("nav button").forEach(function(x){x.classList.toggle("on",x===b)});render();window.scrollTo(0,0)}});
 
+
+/* ===== NÍVEIS E FEEDBACK ===== */
+var FAM={squat:["agach","agachp","agachs"],push:["flexi","flexj","flex","flexp"],bridge:["ponte","pontu"],lunge:["afundo","afundoc"]};
+function famOf(id){for(var f in FAM){var i=FAM[f].indexOf(id);if(i>=0)return {f:f,i:i}}return null}
+function eff(id){var a=famOf(id);if(!a)return id;var L=FAM[a.f],i=Math.max(0,Math.min(L.length-1,a.i+(S.off[a.f]||0)));return L[i]}
+function UN(id){return (id==="prancha"||id==="plat")?"seg":"reps"}
+function phaseCheck(){var w=Math.min(semana(new Date()),12),pi=w<=4?0:w<=8?1:2;if(S.pi!==pi){S.pi=pi;S.off={};S.easy={};save()}}
+function ult(id){var r=S.reps[id];if(!r||!r.length)return '';var l=r[r.length-1];return '<span>Último: '+l.v+' '+UN(id)+'</span>'}
+function repsCard(){var ks=Object.keys(S.reps).filter(function(k){return EX[k]&&S.reps[k].length});if(!ks.length)return '';
+ return '<div class="card"><h2>Repetições</h2><p class="hint">Últimos registros e melhor marca.</p>'+ks.map(function(k){var r=S.reps[k],v=r.slice(-5).map(function(x){return x.v});return '<div class="ex"><div style="flex:1"><b>'+EX[k].n+'</b><span>'+v.join(" → ")+' '+UN(k)+' · melhor: '+Math.max.apply(0,r.map(function(x){return x.v}))+'</span></div></div>'}).join("")+'</div>'}
+function applyFb(id,fb){
+ var a=famOf(id);
+ if(!a){return fb==="f"?"Está fácil: tente mais "+UN(id)+" ou mais tempo, sempre com boa técnica.":fb==="d"?"Sem problema: reduza o ritmo e priorize a técnica (veja a foto).":"Mantido. Continue assim."}
+ var L=FAM[a.f];
+ if(fb==="f"){S.easy[a.f]=(S.easy[a.f]||0)+1;
+  if(S.easy[a.f]>=2){S.easy[a.f]=0;if(a.i<L.length-1){S.off[a.f]=(S.off[a.f]||0)+1;return "Subiu de nível: próximo treino com "+EX[L[a.i+1]].n+"."}return "Você está no nível mais alto disponível: aumente as repetições."}
+  return "Fácil! Se for fácil de novo, subimos de nível."}
+ S.easy[a.f]=0;
+ if(fb==="d"){if(a.i>0){S.off[a.f]=(S.off[a.f]||0)-1;return "Desceu de nível: próximo treino com "+EX[L[a.i-1]].n+". Sem pressa."}return "Já é a versão mais leve: foque na técnica e no descanso."}
+ return "Nível mantido."}
+function openFb(ids,k){
+ var sel={},h='<h2>Como foi o treino? 💪</h2><p class="hint">Anote as repetições da sua melhor volta e diga se foi fácil, ok ou difícil. O app ajusta o nível sozinho.</p>';
+ ids.forEach(function(id){h+='<div class="fb" data-id="'+id+'"><b>'+EX[id].n+'</b><div class="row"><input type="number" inputmode="numeric" min="0" placeholder="'+UN(id)+'" data-r="'+id+'"><div class="seg"><button data-v="d">😅 Difícil</button><button data-v="o">👌 Ok</button><button data-v="f">💪 Fácil</button></div></div></div>'});
+ h+='<div class="row"><button id="fbs">Salvar</button></div><div class="row"><button class="sec" id="fbx">Pular</button></div>';
+ var sh=document.getElementById("sheet");sh.innerHTML=h;document.getElementById("det").classList.add("show");detOnClose=null;
+ sh.onclick=function(e){var b=e.target.closest&&e.target.closest(".seg button");if(!b)return;var box=b.closest(".fb");box.querySelectorAll(".seg button").forEach(function(x){x.classList.toggle("on",x===b)});sel[box.dataset.id]=b.dataset.v};
+ document.getElementById("fbx").onclick=function(){sh.onclick=null;closeDet()};
+ document.getElementById("fbs").onclick=function(){
+  var msgs=[];
+  ids.forEach(function(id){var inp=sh.querySelector('input[data-r="'+id+'"]'),v=parseInt(inp.value,10);
+   if(v>0){S.reps[id]=S.reps[id]||[];S.reps[id].push({d:ds(),v:v})}
+   if(sel[id])msgs.push({n:EX[id].n,m:applyFb(id,sel[id])})});
+  save();render();sh.onclick=null;
+  sh.innerHTML='<h2>Treino salvo ✅</h2>'+(msgs.length?msgs.map(function(x){return '<div class="msg"><b>'+x.n+'</b>'+x.m+'</div>'}).join(""):'<p class="hint">Bom trabalho! Da próxima vez diga se foi fácil ou difícil para o app ajustar.</p>')+'<div class="row"><button id="fbc">Fechar</button></div>';
+  document.getElementById("fbc").onclick=closeDet}}
 
 /* ===== DETALHE DA TÉCNICA ===== */
 var detOnClose=null;
@@ -247,7 +290,7 @@ function tick(){
  drawT();
 }
 function stopT(){if(T){clearInterval(T.iv);T=null}document.getElementById("timer").className="timer"}
-function fim(){var k=T.k;stopT();beep(1000,.4);buzz();S.done[k]=1;save();render();alert2("Treino concluído! 💪")}
+function fim(){var k=T.k,ids=T.ids;stopT();beep(1000,.4);buzz();S.done[k]=1;save();render();openFb(ids,k)}
 function alert2(m){var d=document.createElement("div");d.className="card";d.style.cssText="position:fixed;top:16px;left:16px;right:16px;z-index:20;text-align:center;border-color:var(--acc)";d.innerHTML="<b>"+m+"</b>";document.body.appendChild(d);setTimeout(function(){d.remove()},3000)}
 document.getElementById("tp").onclick=function(){T.pause=!T.pause;drawT()};
 document.getElementById("ts").onclick=function(){T.p++;if(T.p>=T.seq.length)return fim();T.left=T.seq[T.p].s;drawT()};
