@@ -96,6 +96,7 @@ a{color:var(--acc)}
   <h3 id="tn"></h3>
   <div class="big" id="tt">0</div>
   <p id="th"></p>
+  <div class="hint" id="twl" style="margin-bottom:10px"></div>
   <div style="width:100%;max-width:340px">
     <div class="row"><button class="sec" id="tp">Pausar</button><button class="sec" id="ts">Pular</button></div>
     <div class="row"><button class="sec" id="tt2">📷 Ver técnica</button><button class="sec" id="tq">Sair</button></div>
@@ -260,44 +261,71 @@ function closeDet(){document.getElementById("det").classList.remove("show");if(d
 document.getElementById("det").onclick=function(e){if(e.target===this)closeDet()};
 app.addEventListener("click",function(e){var x=e.target.closest&&e.target.closest(".ex.tap");if(x)showDet(x.dataset.id)});
 
-/* ===== TIMER ===== */
-var T=null,ac=null;
-function beep(f,d){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.value=.15;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+/* ===== TIMER (tempo absoluto, sobrevive a tela apagada) ===== */
+var T=null,ac=null,WL=null,TKEY="calistenia_timer_v1",lastShown=null;
+function beep(f,d){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.value=.15;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
 function buzz(){try{navigator.vibrate&&navigator.vibrate(200)}catch(e){}}
-function startTimer(ph,ids,k){
- var seq=[];
+function buildSeq(ph,ids){var seq=[];
  for(var r=1;r<=ph.rounds;r++)ids.forEach(function(id,i){seq.push({t:"work",id:id,r:r,i:i,s:ph.w});seq.push({t:"rest",id:id,r:r,i:i,s:ph.r,next:ids[i+1]||(r<ph.rounds?ids[0]:null)})});
- seq.pop(); /* sem descanso após o último */
- T={seq:seq,p:0,left:seq[0].s,pause:false,k:k,ids:ids,total:ph.rounds};
+ seq.pop();return seq}
+function persistT(){try{if(T)localStorage.setItem(TKEY,JSON.stringify({ph:T.ph,ids:T.ids,k:T.k,p:T.p,endAt:T.endAt,pause:T.pause,remMs:T.remMs}));else localStorage.removeItem(TKEY)}catch(e){}}
+/* tela sempre ligada durante o treino */
+function wlOn(){try{if(navigator.wakeLock&&!WL){navigator.wakeLock.request("screen").then(function(l){WL=l;l.addEventListener("release",function(){WL=null;drawWL()});drawWL()}).catch(function(){drawWL()})}}catch(e){}drawWL()}
+function wlOff(){try{WL&&WL.release()}catch(e){}WL=null}
+function drawWL(){var el=document.getElementById("twl");if(!el)return;
+ el.textContent=!navigator.wakeLock?"⚠️ Este navegador não mantém a tela ligada. Aumente o tempo de tela nas configurações do celular.":WL?"🔒 Tela mantida ligada":"Ativando tela sempre ligada…"}
+function curLeft(){return T.pause?Math.ceil(T.remMs/1000):Math.max(0,Math.ceil((T.endAt-Date.now())/1000))}
+function startTimer(ph,ids,k){
+ var p={w:ph.w,r:ph.r,rounds:ph.rounds},seq=buildSeq(p,ids);
+ T={ph:p,ids:ids,k:k,seq:seq,p:0,pause:false,remMs:0,endAt:Date.now()+seq[0].s*1000,total:p.rounds};
+ persistT();wlOn();lastShown=null;
  document.getElementById("timer").classList.add("show");
  beep(880,.2);buzz();drawT();
- T.iv=setInterval(tick,1000);
+ T.iv=setInterval(tick,250);
+}
+function restoreTimer(){
+ try{var j=localStorage.getItem(TKEY);if(!j)return;var o=JSON.parse(j);
+  var seq=buildSeq(o.ph,o.ids);if(!seq[o.p]){localStorage.removeItem(TKEY);return}
+  T={ph:o.ph,ids:o.ids,k:o.k,seq:seq,p:o.p,pause:!!o.pause,remMs:o.remMs||0,endAt:o.endAt,total:o.ph.rounds};
+  /* ficou muito tempo fora: retoma pausado no início do exercício atual */
+  if(!T.pause&&Date.now()-T.endAt>5*60*1000){T.pause=true;T.remMs=seq[T.p].s*1000}
+  persistT();wlOn();lastShown=null;
+  document.getElementById("timer").classList.add("show");drawT();
+  T.iv=setInterval(tick,250);
+ }catch(e){try{localStorage.removeItem(TKEY)}catch(x){}T=null}
 }
 function drawT(){
  var s=T.seq[T.p],el=document.getElementById("timer");
  el.className="timer show "+s.t;
  document.getElementById("tr").textContent="Volta "+s.r+" de "+T.total+" · exercício "+(s.i+1)+"/"+T.ids.length;
- document.getElementById("tt").textContent=T.left;
+ document.getElementById("tt").textContent=curLeft();
  if(s.t==="work"){document.getElementById("tn").textContent=EX[s.id].n;document.getElementById("th").textContent=EX[s.id].h}
  else{document.getElementById("tn").textContent="Descanse 😮‍💨";document.getElementById("th").textContent=s.next?"Próximo: "+EX[s.next].n:"Quase lá!"}
  document.getElementById("tp").textContent=T.pause?"Continuar":"Pausar";
+ drawWL();
 }
 function tick(){
- if(T.pause)return;
- T.left--;
- if(T.left<=3&&T.left>0)beep(660,.1);
- if(T.left<=0){T.p++;if(T.p>=T.seq.length)return fim();T.left=T.seq[T.p].s;beep(T.seq[T.p].t==="work"?880:440,.25);buzz()}
- drawT();
+ if(!T||T.pause)return;
+ var now=Date.now(),moved=false;
+ while(now>=T.endAt){T.p++;moved=true;if(T.p>=T.seq.length)return fim();T.endAt+=T.seq[T.p].s*1000}
+ if(moved){persistT();lastShown=null;if(now-(T.endAt-T.seq[T.p].s*1000)<2000){beep(T.seq[T.p].t==="work"?880:440,.25);buzz()}}
+ var left=curLeft();
+ if(left<=3&&left>0&&lastShown!==left)beep(660,.1);
+ lastShown=left;drawT();
 }
-function stopT(){if(T){clearInterval(T.iv);T=null}document.getElementById("timer").className="timer"}
+function pauseT(){if(!T||T.pause)return;T.remMs=Math.max(0,T.endAt-Date.now());T.pause=true;persistT()}
+function resumeT(){if(!T||!T.pause)return;T.endAt=Date.now()+T.remMs;T.pause=false;persistT();wlOn()}
+function stopT(){if(T){clearInterval(T.iv);T=null}persistT();wlOff();document.getElementById("timer").className="timer"}
 function fim(){var k=T.k,ids=T.ids;stopT();beep(1000,.4);buzz();S.done[k]=1;save();render();openFb(ids,k)}
 function alert2(m){var d=document.createElement("div");d.className="card";d.style.cssText="position:fixed;top:16px;left:16px;right:16px;z-index:20;text-align:center;border-color:var(--acc)";d.innerHTML="<b>"+m+"</b>";document.body.appendChild(d);setTimeout(function(){d.remove()},3000)}
-document.getElementById("tp").onclick=function(){T.pause=!T.pause;drawT()};
-document.getElementById("ts").onclick=function(){T.p++;if(T.p>=T.seq.length)return fim();T.left=T.seq[T.p].s;drawT()};
+document.getElementById("tp").onclick=function(){if(!T)return;T.pause?resumeT():pauseT();drawT()};
+document.getElementById("ts").onclick=function(){if(!T)return;T.p++;if(T.p>=T.seq.length)return fim();if(T.pause)T.remMs=T.seq[T.p].s*1000;else T.endAt=Date.now()+T.seq[T.p].s*1000;persistT();lastShown=null;drawT()};
 document.getElementById("tq").onclick=stopT;
-document.getElementById("tt2").onclick=function(){if(!T)return;var was=T.pause;T.pause=true;drawT();showDet(T.seq[T.p].id,function(){if(T){T.pause=was;drawT()}})};
+document.getElementById("tt2").onclick=function(){if(!T)return;var was=T.pause;pauseT();drawT();showDet(T.seq[T.p].id,function(){if(T){if(!was)resumeT();drawT()}})};
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&T){if(!T.pause)wlOn();tick();drawT()}});
 
-load();render();
+load();render();restoreTimer();
+
 if('serviceWorker' in navigator){window.addEventListener('load',function(){try{navigator.serviceWorker.register('sw.js').catch(function(){})}catch(e){}})}
 </script>
 </body>
